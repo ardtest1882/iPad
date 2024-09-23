@@ -8,54 +8,58 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #f8f9fa;
         }
         #container {
             text-align: center;
             padding: 20px;
-            background-color: #f8f9fa;
+            background-color: #fff;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            margin: 0 auto;
-            z-index: 1000;
+            width: 90%;
+            max-width: 400px;
+            margin: 20px auto;
         }
         .input-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 3px; /* 입력창 간의 간격을 더 줄임 */
         }
         input {
-            font-size: 20px;
-            padding: 10px;
-            width: 200px;
-        }
-        button {
-            font-size: 20px;
-            padding: 10px 20px;
-            margin-top: 10px;
-        }
-        #copyText {
-            font-size: 20px;
-            padding: 10px;
-            width: 150px;
+            font-size: 14px;
+            padding: 6px;
+            width: 58px; /* 입력창 가로 길이 */
+            height: 40px; /* 높이를 복사 버튼과 같게 설정 */
             text-align: center;
             border: 1px solid #ccc;
-            background-color: #f0f0f0;
+            border-radius: 5px;
             margin-right: 10px;
         }
-        #copyButton {
-            font-size: 18px;
-            padding: 10px 20px;
-            margin-left: 10px;
+        button {
+            font-size: 14px;
+            padding: 6px 12px;
+            height: 40px; /* 버튼 높이를 입력창과 동일하게 설정 */
+            margin-left: 5px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .copy-button {
+            width: 40px;
+            height: 40px; /* 복사 버튼 높이를 입력창과 동일하게 설정 */
+            margin-left: 5px;
         }
         #result, #result2, #btcResult {
-            margin-top: 20px;
-            font-size: 24px;
+            margin-top: 10px;
+            font-size: 16px;
+            color: #333;
         }
     </style>
 </head>
@@ -63,68 +67,50 @@
     <div id="container">
         <!-- 트론 금액 입력 -->
         <div class="input-container">
-            <textarea id="copyText" readonly></textarea>
-            <button id="copyButton" onclick="copyTextToClipboard()">복사</button>
-            <input type="number" id="krwInput" placeholder="만원 단위 입력">
+            <input type="number" id="krwInput" placeholder="만원 입력">
+            <button onclick="calculateTRX()">트론</button>
+            <button id="copyButton" class="copy-button" onclick="copyTRX()">복</button>
         </div>
-        <button onclick="calculateTRX()">트론</button>
-        <div id="result"></div>
 
         <!-- 소액 금액 입력 -->
         <div class="input-container">
-            <textarea id="copyText2" readonly></textarea>
-            <button id="copyButton2" onclick="copyTextToClipboard2()">복사</button>
-            <input type="number" id="krwInput2" placeholder="만원 단위 입력">
+            <input type="number" id="krwInput2" placeholder="만원 입력">
+            <button onclick="calculateTRXWithDeduction()">소액</button>
+            <button id="copyButton2" class="copy-button" onclick="copyTRXWithDeduction()">복</button>
         </div>
-        <button onclick="calculateTRXWithDeduction()">소액</button>
-        <div id="result2"></div>
 
         <!-- 비트코인 금액 입력 -->
         <div class="input-container">
-            <textarea id="copyTextBTC" readonly></textarea>
-            <button id="copyButtonBTC" onclick="copyTextToClipboardBTC()">복사</button>
-            <input type="number" id="krwInputBTC" placeholder="만원 단위 입력">
+            <input type="number" id="krwInputBTC" placeholder="만원 입력">
+            <button onclick="calculateBTC()">비트</button>
+            <button id="copyButtonBTC" class="copy-button" onclick="copyBTC()">복</button>
         </div>
-        <button onclick="calculateBTC()">비트</button>
+
+        <div id="result"></div>
+        <div id="result2"></div>
         <div id="btcResult"></div>
     </div>
 
     <script>
-        // 텍스트 복사 함수
-        function copyTextToClipboard() {
-            const copyText = document.getElementById("copyText");
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);  // 모바일 대응
-            try {
-                document.execCommand('copy');
-                alert("복사가 완료되었습니다.");
-            } catch (err) {
-                alert("복사에 실패했습니다. 직접 복사해 주세요.");
-            }
+        // 트론 복사 함수 (정수만 복사)
+        function copyTRX() {
+            const copyText = document.getElementById("result").innerText;
+            const numberToCopy = Math.floor(parseFloat(copyText.replace(/[^0-9.]/g, '')));
+            navigator.clipboard.writeText(numberToCopy);
         }
 
-        function copyTextToClipboard2() {
-            const copyText = document.getElementById("copyText2");
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);  // 모바일 대응
-            try {
-                document.execCommand('copy');
-                alert("복사가 완료되었습니다.");
-            } catch (err) {
-                alert("복사에 실패했습니다. 직접 복사해 주세요.");
-            }
+        // 소액 트론 복사 함수 (정수만 복사)
+        function copyTRXWithDeduction() {
+            const copyText = document.getElementById("result2").innerText;
+            const numberToCopy = Math.floor(parseFloat(copyText.replace(/[^0-9.]/g, '')));
+            navigator.clipboard.writeText(numberToCopy);
         }
 
-        function copyTextToClipboardBTC() {
-            const copyText = document.getElementById("copyTextBTC");
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);  // 모바일 대응
-            try {
-                document.execCommand('copy');
-                alert("복사가 완료되었습니다.");
-            } catch (err) {
-                alert("복사에 실패했습니다. 직접 복사해 주세요.");
-            }
+        // 비트코인 복사 함수 (소수점 이하 5자리, 반올림 없이 버림)
+        function copyBTC() {
+            const copyText = document.getElementById("btcResult").innerText;
+            const numberToCopy = Math.floor(parseFloat(copyText.replace(/[^0-9.]/g, '')) * 100000) / 100000;
+            navigator.clipboard.writeText(numberToCopy.toFixed(5));
         }
 
         // 트론 금액 계산 함수
@@ -141,7 +127,6 @@
             const adjustedPrice = currentPrice * 1.117;
             const trxAmount = (krwAmount / adjustedPrice).toFixed(2);
             document.getElementById("result").innerText = `Trx: ${trxAmount}`;
-            document.getElementById("copyText").value = Math.floor(trxAmount); // 정수만 복사 영역에 표시
         }
 
         // 소액 트론 금액 계산 함수
@@ -158,7 +143,6 @@
             const adjustedPrice = currentPrice * 1.01;
             const trxAmount2 = (krwAmount2 / adjustedPrice).toFixed(2);
             document.getElementById("result2").innerText = `소액: ${trxAmount2}`;
-            document.getElementById("copyText2").value = Math.floor(trxAmount2); // 정수만 복사 영역에 표시
         }
 
         // 비트코인 금액 계산 함수
@@ -177,7 +161,6 @@
             const minusBTC = 30000 / adjustedPriceBTC;
             const finalBTC = Math.floor((totalBTC - minusBTC) * 100000) / 100000;
             document.getElementById("btcResult").innerText = `Btc: ${finalBTC.toFixed(5)}`;
-            document.getElementById("copyTextBTC").value = finalBTC.toFixed(5); // 정수만 복사 영역에 표시
         }
     </script>
 </body>
