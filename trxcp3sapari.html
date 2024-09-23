@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>갯수</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        #container {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            z-index: 1000;
+        }
+        input {
+            font-size: 20px;
+            padding: 10px;
+            margin-bottom: 20px;
+            width: 200px;
+        }
+        button {
+            font-size: 20px;
+            padding: 10px 20px;
+        }
+        #result, #result2, #btcResult {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+        #secondContainer, #btcContainer {
+            margin-top: 20px;
+        }
+        #content {
+            padding-top: 220px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <input type="number" id="krwInput" placeholder="만원 단위 입력">
+        <button onclick="calculateTRX()">트론</button>
+        <div id="result"></div>
+
+        <div id="secondContainer">
+            <input type="number" id="krwInput2" placeholder="만원 단위 입력">
+            <button onclick="calculateTRXWithDeduction()">소액</button>
+        </div>
+        <div id="result2"></div>
+
+        <div id="btcContainer">
+            <input type="number" id="krwInputBTC" placeholder="만원 단위 입력">
+            <button onclick="calculateBTC()">비트</button>
+        </div>
+        <div id="btcResult"></div>
+    </div>
+
+    <div id="content"></div>
+
+    <script>
+        async function fetchTRXPrice() {
+            try {
+                const response = await fetch("https://api.upbit.com/v1/ticker?markets=KRW-TRX");
+                const data = await response.json();
+                return data[0].trade_price;
+            } catch (error) {
+                console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
+                alert("가격을 가져오는 데 실패했습니다. 다시 시도해주세요.");
+                return null;
+            }
+        }
+
+        function copyToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.style.position = "fixed";  // 화면 이동 방지
+            textArea.style.left = "-9999px";    // iOS에서 보이지 않도록 설정
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    alert('복사가 성공적으로 완료되었습니다.');
+                } else {
+                    alert('복사에 실패했습니다.');
+                }
+            } catch (err) {
+                console.error('복사 중 오류 발생:', err);
+                alert('복사에 실패했습니다.');
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        async function calculateTRX() {
+            const krwInput = document.getElementById("krwInput").value;
+            if (!krwInput) {
+                alert("금액을 입력하세요.");
+                return;
+            }
+            const krwAmount = krwInput * 10000;
+            const currentPrice = await fetchTRXPrice();
+            if (currentPrice) {
+                const adjustedPrice = currentPrice * 1.117;
+                const trxAmount = (krwAmount / adjustedPrice).toFixed(2);
+                document.getElementById("result").innerText = `Trx: ${trxAmount}`;
+                copyToClipboard(Math.floor(trxAmount));
+            }
+        }
+
+        async function calculateTRXWithDeduction() {
+            const krwInput2 = document.getElementById("krwInput2").value;
+            if (!krwInput2) {
+                alert("금액을 입력하세요.");
+                return;
+            }
+            const krwAmount2 = krwInput2 * 10000 - 10000;
+            const currentPrice = await fetchTRXPrice();
+            if (currentPrice) {
+                const adjustedPrice = currentPrice * 1.01;
+                const trxAmount2 = (krwAmount2 / adjustedPrice).toFixed(2);
+                document.getElementById("result2").innerText = `소액: ${trxAmount2}`;
+                copyToClipboard(Math.floor(trxAmount2));
+            }
+        }
+
+        async function calculateBTC() {
+            const krwInputBTC = document.getElementById("krwInputBTC").value;
+            if (!krwInputBTC) {
+                alert("금액을 입력하세요.");
+                return;
+            }
+            const krwAmountBTC = krwInputBTC * 10000;
+            try {
+                const response = await fetch("https://api.upbit.com/v1/ticker?markets=KRW-BTC");
+                const data = await response.json();
+                const currentPriceBTC = data[0].trade_price;
+                const adjustedPriceBTC = currentPriceBTC * 1.17;
+                const totalBTC = (krwAmountBTC / adjustedPriceBTC);
+                const minusBTC = 30000 / adjustedPriceBTC;
+                const finalBTC = Math.floor((totalBTC - minusBTC) * 100000) / 100000;
+                document.getElementById("btcResult").innerText = `Btc: ${finalBTC.toFixed(5)}`;
+                copyToClipboard(finalBTC.toFixed(5));
+            } catch (error) {
+                console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
+                alert("가격을 가져오는 데 실패했습니다. 다시 시도해주세요.");
+            }
+        }
+    </script>
+</body>
+</html>
