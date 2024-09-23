@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!D3OCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -88,17 +88,40 @@
 
         // 클립보드 복사 함수 (iOS 대응)
         function copyToClipboard(text) {
-            try {
+            if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(text).then(() => {
                     alert('복사가 성공적으로 완료되었습니다.');
                 }).catch(err => {
                     console.error("클립보드 복사 실패:", err);
-                    alert("복사가 실패했습니다. 직접 복사해주세요: " + text);
+                    displayCopyFallback(text);
                 });
-            } catch (err) {
-                console.error("복사 오류:", err);
-                alert("클립보드 접근이 차단되었습니다. 직접 복사해주세요: " + text);
+            } else {
+                // Fallback: document.execCommand 사용
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.style.position = "fixed";
+                textArea.style.left = "-9999px";
+                textArea.focus();
+                textArea.select();
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        alert("복사가 성공적으로 완료되었습니다.");
+                    } else {
+                        displayCopyFallback(text);
+                    }
+                } catch (err) {
+                    console.error("복사 오류:", err);
+                    displayCopyFallback(text);
+                }
+                document.body.removeChild(textArea);
             }
+        }
+
+        // 복사 실패 시 직접 복사 안내
+        function displayCopyFallback(text) {
+            alert("복사에 실패했습니다. 아래 텍스트를 직접 복사하세요:\n\n" + text);
         }
 
         // 트론 금액 계산 함수
