@@ -55,10 +55,10 @@
             display: none;
         }
         #copyButton {
-            display: none; /* 기본적으로 숨기고 텍스트가 나타날 때 표시 */
             font-size: 18px;
             padding: 10px 20px;
             margin-top: 10px;
+            display: none; /* 기본적으로 숨김 */
         }
     </style>
 </head>
@@ -182,7 +182,7 @@
                 document.getElementById("btcResult").innerText = `Btc: ${finalBTC.toFixed(5)}`;
                 displayCopyText(finalBTC.toFixed(5));  // 정수 부분만 표시 및 복사 유도
             } catch (error) {
-                console.error("가격을 가져오는 데 실패했습니다:", error);
+                console.error("가격을 가져오는 데 실패했습니다.", error);
                 alert("가격을 가져오는 데 실패했습니다. 다시 시도해주세요.");
             }
         }
