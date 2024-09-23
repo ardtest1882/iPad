@@ -109,8 +109,10 @@
         function displayCopyText(text) {
             const copyText = document.getElementById("copyText");
             const copyButton = document.getElementById("copyButton");
+            console.log("텍스트박스에 표시할 텍스트:", text); // 디버깅 메시지 추가
             copyText.value = text;
             copyText.style.display = "block";  // 텍스트박스 표시
+            console.log("복사 버튼을 표시합니다."); // 디버깅 메시지 추가
             copyButton.style.display = "inline-block";  // 복사 버튼 표시
         }
 
