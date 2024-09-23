@@ -55,7 +55,7 @@
             display: none;
         }
         #copyButton {
-            display: none;
+            display: none; /* 기본적으로 숨기고 텍스트가 나타날 때 표시 */
             font-size: 18px;
             padding: 10px 20px;
             margin-top: 10px;
@@ -83,7 +83,7 @@
 
     <!-- 복사할 텍스트를 표시하는 텍스트박스 -->
     <textarea id="copyText" readonly></textarea>
-    <!-- 복사 버튼 추가 -->
+    <!-- 복사 버튼 -->
     <button id="copyButton" onclick="copyTextToClipboard()">복사</button>
 
     <script>
