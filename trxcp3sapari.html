@@ -68,52 +68,63 @@
     <div id="content"></div>
 
     <script>
-        // TRX 가격을 가져오는 함수
-        async function fetchTRXPrice() {
+        // TRX 가격을 가져오는 함수 - 3번 시도 후 실패시 오류 반환
+        async function fetchTRXPrice(retries = 3) {
             try {
                 const response = await fetch("https://api.upbit.com/v1/ticker?markets=KRW-TRX");
                 const data = await response.json();
                 return data[0].trade_price;
             } catch (error) {
-                console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
-                alert("가격을 가져오는 데 실패했습니다. 다시 시도해주세요.");
-                return null;  // 가격을 가져오지 못한 경우 null 반환
+                if (retries > 0) {
+                    console.log(`재시도 중... 남은 시도 횟수: ${retries}`);
+                    return fetchTRXPrice(retries - 1);
+                } else {
+                    console.error("가격을 가져오는 데 실패했습니다:", error);
+                    alert("가격을 가져오는 데 실패했습니다. 다시 시도해주세요.");
+                    return null;
+                }
             }
         }
 
-        // 클립보드에 텍스트 복사하는 함수
+        // 클립보드 복사 함수
         function copyToClipboard(text) {
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(text).then(() => {
                     alert('복사가 성공적으로 완료되었습니다.');
                 }).catch(err => {
                     console.error("클립보드 복사 실패:", err);
-                    alert('복사에 실패했습니다.');
+                    fallbackCopyTextToClipboard(text);
                 });
             } else {
-                const textArea = document.createElement("textarea");
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.style.position = "fixed";
-                textArea.style.left = "-9999px";
-                textArea.focus();
-                textArea.select();
-                try {
-                    const successful = document.execCommand('copy');
-                    if (successful) {
-                        alert("복사가 성공적으로 완료되었습니다.");
-                    } else {
-                        alert("복사에 실패했습니다.");
-                    }
-                } catch (err) {
-                    console.error("복사 오류 발생:", err);
-                    alert("복사에 실패했습니다.");
-                }
-                document.body.removeChild(textArea);
+                fallbackCopyTextToClipboard(text);
             }
         }
 
-        // 트론 금액 계산 함수
+        // Fallback 복사 방식 (document.execCommand)
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    alert("복사가 성공적으로 완료되었습니다.");
+                } else {
+                    alert("복사에 실패했습니다.");
+                }
+            } catch (err) {
+                console.error("복사 실패:", err);
+                alert("복사에 실패했습니다.");
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // 트론 계산 함수
         async function calculateTRX() {
             const krwInput = document.getElementById("krwInput").value;
             if (!krwInput) {
@@ -130,7 +141,7 @@
             }
         }
 
-        // 소액 트론 금액 계산 함수 (소액 차감)
+        // 소액 트론 계산 함수
         async function calculateTRXWithDeduction() {
             const krwInput2 = document.getElementById("krwInput2").value;
             if (!krwInput2) {
@@ -139,17 +150,17 @@
             }
             const krwAmount2 = krwInput2 * 10000 - 10000;
             const currentPrice = await fetchTRXPrice();
-            if (currentPrice) {  // 가격이 null이 아닌 경우에만 계산
+            if (currentPrice) {
                 const adjustedPrice = currentPrice * 1.01;
                 const trxAmount2 = (krwAmount2 / adjustedPrice).toFixed(2);
                 document.getElementById("result2").innerText = `소액: ${trxAmount2}`;
                 copyToClipboard(Math.floor(trxAmount2));
             } else {
-                document.getElementById("result2").innerText = "가격을 가져오는 데 실패했습니다.";  // 가격을 못 가져왔을 때 처리
+                document.getElementById("result2").innerText = "가격을 가져오는 데 실패했습니다.";
             }
         }
 
-        // 비트코인 금액 계산 함수
+        // 비트코인 계산 함수
         async function calculateBTC() {
             const krwInputBTC = document.getElementById("krwInputBTC").value;
             if (!krwInputBTC) {
@@ -168,7 +179,7 @@
                 document.getElementById("btcResult").innerText = `Btc: ${finalBTC.toFixed(5)}`;
                 copyToClipboard(finalBTC.toFixed(5));
             } catch (error) {
-                console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
+                console.error("가격을 가져오는 데 실패했습니다:", error);
                 alert("가격을 가져오는 데 실패했습니다. 다시 시도해주세요.");
             }
         }
