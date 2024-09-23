@@ -32,6 +32,7 @@
         button {
             font-size: 20px;
             padding: 10px 20px;
+            margin-top: 10px;
         }
         #result, #result2, #btcResult {
             margin-top: 20px;
@@ -52,6 +53,12 @@
             text-align: center;
             border: 1px solid #ccc;
             display: none;
+        }
+        #copyButton {
+            display: none;
+            font-size: 18px;
+            padding: 10px 20px;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -76,6 +83,8 @@
 
     <!-- 복사할 텍스트를 표시하는 텍스트박스 -->
     <textarea id="copyText" readonly></textarea>
+    <!-- 복사 버튼 추가 -->
+    <button id="copyButton" onclick="copyTextToClipboard()">복사</button>
 
     <script>
         // TRX 가격을 가져오는 함수 - 오류시 재시도
@@ -96,13 +105,26 @@
             }
         }
 
-        // 텍스트박스에 복사할 텍스트 표시 및 자동 선택
+        // 복사할 텍스트를 표시하고 복사 버튼 활성화
         function displayCopyText(text) {
             const copyText = document.getElementById("copyText");
-            copyText.value = text;  // 텍스트박스에 텍스트 설정
+            const copyButton = document.getElementById("copyButton");
+            copyText.value = text;
             copyText.style.display = "block";  // 텍스트박스 표시
-            copyText.select();  // 텍스트 자동 선택
+            copyButton.style.display = "inline-block";  // 복사 버튼 표시
+        }
+
+        // 텍스트박스의 텍스트를 클립보드에 복사하는 함수
+        function copyTextToClipboard() {
+            const copyText = document.getElementById("copyText");
+            copyText.select();
             copyText.setSelectionRange(0, 99999);  // 모바일 대응
+            try {
+                document.execCommand('copy');
+                alert("복사가 완료되었습니다.");
+            } catch (err) {
+                alert("복사에 실패했습니다. 직접 복사해 주세요.");
+            }
         }
 
         // 트론 금액 계산 함수
