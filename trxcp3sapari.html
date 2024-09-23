@@ -58,7 +58,7 @@
             font-size: 18px;
             padding: 10px 20px;
             margin-top: 10px;
-            display: none; /* 기본적으로 숨김 */
+            display: inline-block;
         }
     </style>
 </head>
@@ -81,12 +81,12 @@
         <div id="btcResult"></div>
     </div>
 
-    <!-- 복사할 텍스트를 표시하는 텍스트박스 -->
-    <textarea id="copyText" readonly></textarea>
     <!-- 복사 버튼 -->
-    <button id="copyButton" onclick="copyTextToClipboard()">복사</button>
+    <button id="copyButton" onclick="copyToClipboard()">복사</button>
 
     <script>
+        let clipboardText = "";
+
         // TRX 가격을 가져오는 함수 - 오류시 재시도
         async function fetchTRXPrice(retries = 3) {
             try {
@@ -105,27 +105,17 @@
             }
         }
 
-        // 복사할 텍스트를 표시하고 복사 버튼 활성화
-        function displayCopyText(text) {
-            const copyText = document.getElementById("copyText");
-            const copyButton = document.getElementById("copyButton");
-            console.log("텍스트박스에 표시할 텍스트:", text); // 디버깅 메시지 추가
-            copyText.value = text;
-            copyText.style.display = "block";  // 텍스트박스 표시
-            console.log("복사 버튼을 표시합니다."); // 디버깅 메시지 추가
-            copyButton.style.display = "inline-block";  // 복사 버튼 표시
-        }
-
-        // 텍스트박스의 텍스트를 클립보드에 복사하는 함수
-        function copyTextToClipboard() {
-            const copyText = document.getElementById("copyText");
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);  // 모바일 대응
-            try {
-                document.execCommand('copy');
-                alert("복사가 완료되었습니다.");
-            } catch (err) {
-                alert("복사에 실패했습니다. 직접 복사해 주세요.");
+        // 텍스트를 클립보드에 복사하는 함수
+        function copyToClipboard() {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(clipboardText).then(() => {
+                    alert("복사가 완료되었습니다.");
+                }).catch(err => {
+                    alert("복사에 실패했습니다. 직접 복사해 주세요.");
+                    console.error("복사 실패:", err);
+                });
+            } else {
+                alert("복사 기능을 사용할 수 없습니다.");
             }
         }
 
@@ -142,7 +132,7 @@
                 const adjustedPrice = currentPrice * 1.117;
                 const trxAmount = (krwAmount / adjustedPrice).toFixed(2);
                 document.getElementById("result").innerText = `Trx: ${trxAmount}`;
-                displayCopyText(Math.floor(trxAmount));  // 정수 부분만 표시 및 복사 유도
+                clipboardText = Math.floor(trxAmount).toString(); // 복사할 정수 부분 설정
             }
         }
 
@@ -159,7 +149,7 @@
                 const adjustedPrice = currentPrice * 1.01;
                 const trxAmount2 = (krwAmount2 / adjustedPrice).toFixed(2);
                 document.getElementById("result2").innerText = `소액: ${trxAmount2}`;
-                displayCopyText(Math.floor(trxAmount2));  // 정수 부분만 표시 및 복사 유도
+                clipboardText = Math.floor(trxAmount2).toString(); // 복사할 정수 부분 설정
             } else {
                 document.getElementById("result2").innerText = "가격을 가져오는 데 실패했습니다.";
             }
@@ -182,7 +172,7 @@
                 const minusBTC = 30000 / adjustedPriceBTC;
                 const finalBTC = Math.floor((totalBTC - minusBTC) * 100000) / 100000;
                 document.getElementById("btcResult").innerText = `Btc: ${finalBTC.toFixed(5)}`;
-                displayCopyText(finalBTC.toFixed(5));  // 정수 부분만 표시 및 복사 유도
+                clipboardText = finalBTC.toFixed(5).toString(); // 복사할 정수 부분 설정
             } catch (error) {
                 console.error("가격을 가져오는 데 실패했습니다.", error);
                 alert("가격을 가져오는 데 실패했습니다. 다시 시도해주세요.");
